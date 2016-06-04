@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# GameServer responds to Player requests and transfers each Player to a running GameSession
+# Player
 
 require 'rubygems'
 require 'ffi-rzmq'
@@ -13,12 +13,22 @@ class GameComm
   
   def initialize(context, port, logger)
     @socket = context.socket(ZMQ::REP)
-    @socket.connect("tcp://#{GConst::SERVER_IP}:#{port}")
+    error_check(@socket.connect("tcp://#{GConst::SERVER_IP}:#{port}"))
     @logger = logger
   end
   
+  def error_check(rc)
+    if ZMQ::Util.resultcode_ok?(rc)
+      false
+    else
+      STDERR.puts "Operation failed, errno [#{ZMQ::Util.errno}] description [#{ZMQ::Util.error_string}]"
+      caller(1).each { |callstack| STDERR.puts(callstack) }
+      true
+    end
+  end
+  
   def get_command
-    @socket.recv_string(message='')
+    error_check(@socket.recv_string(message=''))
     @logger.log("Player #{@name} received message '#{message}'")
     parts = message.split("|")
     command = parts[0]
@@ -27,7 +37,7 @@ class GameComm
   end
   
   def send_reply(reply)
-    @socket.send_string(reply)
+    error_check(@socket.send_string(reply))
     @logger.log("Player #{@name} sent reply '#{reply}'")
   end
   

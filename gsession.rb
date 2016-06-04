@@ -29,7 +29,7 @@ class Player
   def initialize(context, port, logger)
     @logger = logger
     @socket = context.socket(ZMQ::REQ)
-    @socket.connect("tcp://localhost:#{port}")
+    error_check(@socket.connect("tcp://localhost:#{port}"))
   end
   
   def note_other_players(other1, other2)
