@@ -1,11 +1,10 @@
-
 #!/usr/bin/env ruby
 #
 # GameServer responds to Player requests and transfers each Player to a running GameSession
 
 require 'rubygems'
 require 'ffi-rzmq'
-require 'byebug'
+#require 'byebug'
 
 require_relative 'constants.rb'
 require_relative 'zlogger.rb'
@@ -68,7 +67,7 @@ class GameSession
     @logger.log("GameSession starting on base port #{baseport}")
 		@port = baseport
 		@player_count = 0
-    Process.spawn("./gsession.rb #{@port}")
+    Process.spawn("ruby gsession.rb #{@port}")
 	end
 	
 	def add_player
@@ -93,7 +92,7 @@ logger = ZUtils::Logger.new('GameServer', true)
 gs = GameServer.new(logger)
 
 # start gbroker for this server and connect to it
-Process.spawn("./gbroker.rb #{GConst::BROKER_PLAYER_PORT} #{GConst::BROKER_SERVER_PORT}")
+Process.spawn("ruby gbroker.rb #{GConst::BROKER_PLAYER_PORT} #{GConst::BROKER_SERVER_PORT}")
 context = ZMQ::Context.new
 socket = context.socket(ZMQ::REP)
 socket.connect("tcp://localhost:#{GConst::BROKER_SERVER_PORT}")

@@ -4,7 +4,7 @@
 
 require 'rubygems'
 require 'ffi-rzmq'
-require 'byebug'
+#require 'byebug'
 
 require_relative 'constants.rb'
 require_relative 'board.rb'
@@ -107,9 +107,9 @@ logger.log("Game started on base port #{baseport}")
 context = ZMQ::Context.new(1)
 
 # start brokers for this session
-Process.spawn("./gbroker.rb #{baseport.to_i + 6} #{baseport.to_i + 1}")
-Process.spawn("./gbroker.rb #{baseport.to_i + 7} #{baseport.to_i + 2}")
-Process.spawn("./gbroker.rb #{baseport.to_i + 8} #{baseport.to_i + 3}")
+Process.spawn("ruby gbroker.rb #{baseport.to_i + 6} #{baseport.to_i + 1}")
+Process.spawn("ruby gbroker.rb #{baseport.to_i + 7} #{baseport.to_i + 2}")
+Process.spawn("ruby gbroker.rb #{baseport.to_i + 8} #{baseport.to_i + 3}")
 # Trap ^C 
 #Signal.trap("INT") { 
 #  puts "\nReleasing ports..."
