@@ -28,6 +28,7 @@ class GameComm
   end
   
   def get_command
+    puts "waiting for a command"
     error_check(@socket.recv_string(message=''))
     @logger.log("Player #{@name} received message '#{message}'")
     parts = message.split("|")
@@ -82,6 +83,12 @@ socket.recv_string(message = '')
 logger.log("Received reply from GameSession: '#{message}'")
 port = message.to_i
 gc = GameComm.new(context, port, logger)
+socket.send_string('connected')
+socket.recv_string(message='')
+if message != 'ok'
+  puts "Illegal message received from GameServer: '#{message}'"
+  raise SystemExit
+end
 
 game_over = false
 until game_over
