@@ -39,7 +39,7 @@ class GameServer
   
   def make_session
     # enough players are waiting and ready so spawn a GameSession
-    Process.spawn("ruby gsession.rb #{@baseport}")
+    Process.spawn("ruby gsession.rb #{@baseport + 5}")
     @baseport += @@PORT_GAP
   end
   
