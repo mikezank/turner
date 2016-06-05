@@ -75,5 +75,5 @@ loop do
   end
   logger.log("Sending 'ok' to Player")
   socket.send_string('ok')
-  gs.make_session
+  gs.make_session if ready
 end
