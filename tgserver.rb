@@ -45,6 +45,16 @@ class GameServer
   
 end
 
+def error_check(rc)
+  if ZMQ::Util.resultcode_ok?(rc)
+    false
+  else
+    STDERR.puts "Operation failed, errno [#{ZMQ::Util.errno}] description [#{ZMQ::Util.error_string}]"
+    caller(1).each { |callstack| STDERR.puts(callstack) }
+    true
+  end
+end
+
 #
 # main
 #
@@ -55,25 +65,25 @@ gs = GameServer.new(logger)
 Process.spawn("ruby gbroker.rb #{GConst::BROKER_PLAYER_PORT} #{GConst::BROKER_SERVER_PORT}")
 context = ZMQ::Context.new
 socket = context.socket(ZMQ::REP)
-socket.connect("tcp://localhost:#{GConst::BROKER_SERVER_PORT}")
+error_check(socket.connect("tcp://localhost:#{GConst::BROKER_SERVER_PORT}"))
 
 loop do
-  socket.recv_string(message = '')
+  error_check(socket.recv_string(message = ''))
   unless message == 'join'
     logger.log("Illegal player message received: #{message}")
-    socket.send_string('no')
+    error_check(socket.send_string('no'))
     next
   end
   port, ready = gs.game_request
   logger.log("Sending #{port} to Player")
-  socket.send_string("#{port}")
-  socket.recv_string(message = '')
+  error_check(socket.send_string("#{port}"))
+  error_check(socket.recv_string(message = ''))
   unless message == 'connected'
     logger.log("Illegal player message received: #{message}")
-    socket.send_string('no')
+    error_check(socket.send_string('no'))
     next
   end
   logger.log("Sending 'ok' to Player")
-  socket.send_string('ok')
+  error_check(socket.send_string('ok'))
   gs.make_session if ready
 end

@@ -12,6 +12,7 @@ require_relative 'zlogger.rb'
 class GameComm
   
   def initialize(context, port, logger)
+    @port = port
     @socket = context.socket(ZMQ::REP)
     error_check(@socket.connect("tcp://#{GConst::SERVER_IP}:#{port}"))
     @logger = logger
@@ -28,7 +29,7 @@ class GameComm
   end
   
   def get_command
-    puts "waiting for a command"
+    puts "waiting for a command on port #{@port}"
     error_check(@socket.recv_string(message=''))
     @logger.log("Player #{@name} received message '#{message}'")
     parts = message.split("|")
