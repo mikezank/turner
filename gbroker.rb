@@ -20,5 +20,7 @@ backend = context.socket(ZMQ::DEALER)
 frontend.bind('tcp://*:' + ARGV[0])
 backend.bind('tcp://*:' + ARGV[1])
 
+puts "GBroker running connecting REQ:#{ARGV[0]} to REP:#{ARGV[1]}"
+
 poller = ZMQ::Device.new(frontend, backend)
 

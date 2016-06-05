@@ -28,6 +28,7 @@ class Player
   
   def initialize(context, port, logger)
     @logger = logger
+    @port = port
     @socket = context.socket(ZMQ::REQ)
     error_check(@socket.connect("tcp://localhost:#{port}"))
   end
@@ -38,7 +39,7 @@ class Player
   
   def send_command(command)
     error_check(@socket.send_string(command))
-    @logger.log("Sent '#{command}' to player #{@name}")
+    @logger.log("Sent '#{command}' to player #{@name} over port #{@port}")
     error_check(@socket.recv_string(reply=''))
     @logger.log("Received '#{reply}' from player #{@name}")
     reply
