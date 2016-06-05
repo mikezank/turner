@@ -11,10 +11,10 @@ require_relative 'zlogger.rb'
 
 class GameComm
   
-  def initialize(context, port, logger)
+  def initialize(context, server, port, logger)
     @port = port
     @socket = context.socket(ZMQ::REP)
-    error_check(@socket.connect("tcp://#{GConst::SERVER_IP}:#{port}"))
+    error_check(@socket.connect("tcp://#{server}:#{port}"))
     @logger = logger
   end
   
@@ -52,7 +52,8 @@ end
 #
 # main
 #
-name = ARGV.length == 1 ? ARGV[0] : 'unknown' 
+name = ARGV.length < 1 ? 'unknown' : ARGV[0]
+runlocal = ARGV.length == 2 && ARGV[1] == 'local'
 logger = ZUtils::Logger.new('GPlayer', true)
 
 context = ZMQ::Context.new
@@ -76,14 +77,15 @@ context = ZMQ::Context.new
 #  exit
 #}
 
+server = runlocal ? 'localhost' : GConst::SERVER_IP.to_a
 socket = context.socket(ZMQ::REQ)
-socket.connect("tcp://#{GConst::SERVER_IP}:#{GConst::BROKER_PLAYER_PORT}")
+socket.connect("tcp://#{server}:#{GConst::BROKER_PLAYER_PORT}")
 
 socket.send_string("join")
 socket.recv_string(message = '')
 logger.log("Received reply from GameSession: '#{message}'")
 port = message.to_i
-gc = GameComm.new(context, port, logger)
+gc = GameComm.new(context, server, port, logger)
 socket.send_string('connected')
 socket.recv_string(message='')
 if message != 'ok'

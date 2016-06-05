@@ -4,7 +4,7 @@
 
 require 'rubygems'
 require 'ffi-rzmq'
-#require 'byebug'
+require 'byebug'
 
 require_relative 'constants.rb'
 require_relative 'board.rb'
