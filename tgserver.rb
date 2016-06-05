@@ -24,8 +24,8 @@ class GameServer
     
 	def game_request
     # start a broker for the player
-    Process.spawn("ruby gbroker.rb #{@baseport + 5 + @players} #{@baseport + @players}")
     @players += 1
+    Process.spawn("ruby gbroker.rb #{@baseport + 5 + @players} #{@baseport + @players}")
     if @players < @@PLAYER_COUNT
       # not enough players to start a GameSession yet
       [@baseport + @players, false]
@@ -33,14 +33,14 @@ class GameServer
       # found enough players
       port = @baseport + @players
       @players = 0
-      @baseport += @@PORT_GAP
       [port, true]
     end
   end
   
   def make_session
     # enough players are waiting and ready so spawn a GameSession
-    Process.spawn("ruby gsession.rb #{@baseport - @@PORT_GAP}")
+    Process.spawn("ruby gsession.rb #{@baseport}")
+    @baseport += @@PORT_GAP
   end
   
 end
