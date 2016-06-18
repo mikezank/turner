@@ -77,7 +77,7 @@ context = ZMQ::Context.new
 #  exit
 #}
 
-server = runlocal ? 'localhost' : GConst::SERVER_IP.to_a
+server = runlocal ? 'localhost' : GConst::SERVER_IP
 socket = context.socket(ZMQ::REQ)
 socket.connect("tcp://#{server}:#{GConst::BROKER_PLAYER_PORT}")
 

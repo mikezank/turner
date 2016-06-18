@@ -69,6 +69,7 @@ error_check(socket.connect("tcp://localhost:#{GConst::BROKER_SERVER_PORT}"))
 
 loop do
   error_check(socket.recv_string(message = ''))
+  logger.log("Request received; message = #{message}")
   unless message == 'join'
     logger.log("Illegal player message received: #{message}")
     error_check(socket.send_string('no'))
