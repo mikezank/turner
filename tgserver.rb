@@ -63,6 +63,8 @@ pids = [] # keep track of all spawned processes
 
 # Trap ^C 
 Signal.trap("INT") {
+ puts "pids = "
+ puts pids
   pids.each do |pid|
     begin
       puts "Killing pid #{pid}"
