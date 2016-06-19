@@ -59,19 +59,6 @@ end
 #
 # main
 #
-
-# Trap ^C 
-Signal.trap("INT") {
-  pids.each do |pid|
-    puts "Killing pid #{pid}"
-    Process.kill(-9, pid)
-  end
-  exit
-}
-#  puts "\nReleasing ports..."
-#  context.terminate
-#  exit
-#}
 pids = [] # keep track of all spawned processes
 logger = ZUtils::Logger.new('GameServer', true)
 gs = GameServer.new(pids, logger)
@@ -103,3 +90,12 @@ loop do
   error_check(socket.send_string('ok'))
   gs.make_session if ready
 end
+
+# Trap ^C 
+Signal.trap("INT") {
+  pids.each do |pid|
+    puts "Killing pid #{pid}"
+    Process.kill(-9, pid)
+  end
+  exit
+}
