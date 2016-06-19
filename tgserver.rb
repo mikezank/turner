@@ -15,7 +15,8 @@ class GameServer
 	@@BASE_PORT = GConst::GAME_SERVER_BASE_PORT
 	@@PORT_GAP = 10
 
-	def initialize(logger)
+	def initialize(pids, logger)
+    @pids = pids
     @players = 0
     @baseport = @@BASE_PORT
     @logger = logger
@@ -25,7 +26,7 @@ class GameServer
 	def game_request
     # start a broker for the player
     @players += 1
-    Process.spawn("ruby gbroker.rb #{@baseport + 5 + @players} #{@baseport + @players}")
+    @pids << Process.spawn("ruby gbroker.rb #{@baseport + 5 + @players} #{@baseport + @players}")
     if @players < @@PLAYER_COUNT
       # not enough players to start a GameSession yet
       [@baseport + @players, false]
@@ -39,7 +40,7 @@ class GameServer
   
   def make_session
     # enough players are waiting and ready so spawn a GameSession
-    Process.spawn("ruby gsession.rb #{@baseport + 5}")
+    @pids << Process.spawn("ruby gsession.rb #{@baseport + 5}")
     @baseport += @@PORT_GAP
   end
   
@@ -58,11 +59,25 @@ end
 #
 # main
 #
+
+# Trap ^C 
+Signal.trap("INT") {
+  pids.each do |pid|
+    puts "Killing pid #{pid}"
+    Process.kill(-9, pid)
+  end
+  exit
+}
+#  puts "\nReleasing ports..."
+#  context.terminate
+#  exit
+#}
+pids = [] # keep track of all spawned processes
 logger = ZUtils::Logger.new('GameServer', true)
-gs = GameServer.new(logger)
+gs = GameServer.new(pids, logger)
 
 # start gbroker for this server and connect to it
-Process.spawn("ruby gbroker.rb #{GConst::BROKER_PLAYER_PORT} #{GConst::BROKER_SERVER_PORT}")
+pids << Process.spawn("ruby gbroker.rb #{GConst::BROKER_PLAYER_PORT} #{GConst::BROKER_SERVER_PORT}")
 context = ZMQ::Context.new
 socket = context.socket(ZMQ::REP)
 error_check(socket.connect("tcp://localhost:#{GConst::BROKER_SERVER_PORT}"))
