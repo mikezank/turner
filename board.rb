@@ -61,7 +61,7 @@ class Board
           letter_string << "_ "
         end
       end
-      letter_string << "\n"
+      # letter_string << "\n"
     end
     letter_string
   end
