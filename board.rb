@@ -7,7 +7,7 @@ class Board
 	attr_reader :phrase
 
 	def initialize(phrase)
-    @phrase = phrase
+    @phrase = phrase.upcase
     words = phrase.split(" ")
     @chosen_letters = []
 		@lines = []

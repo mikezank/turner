@@ -115,7 +115,7 @@ until game_over
     game_over = true
   when 'pick'
     print "Letter: "
-    letter = $stdin.gets.chomp
+    letter = $stdin.gets.chomp.upcase
     gc.send_reply(letter)
   when 'chosen'
     puts "That letter was already chosen"
@@ -136,7 +136,7 @@ until game_over
     gc.send_reply('ok')
   when 'guess'
     puts "Guess:"
-    guess = $stdin.gets.chomp
+    guess = $stdin.gets.chomp.upcase
     gc.send_reply(guess)
   when 'picked2'
     puts "Letter #{payload} was picked again"
