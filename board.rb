@@ -56,9 +56,9 @@ class Board
       @@LINE_LENGTH.times do |charno|
         letterno = lineno * @@LINE_LENGTH + charno
         if @visible[letterno]
-          letter_string << @letters[letterno] + " "
+          letter_string << @letters[letterno]
         else
-          letter_string << "_ "
+          letter_string << "_"
         end
       end
       # letter_string << "\n"
