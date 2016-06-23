@@ -8,7 +8,7 @@ class Board
 
 	def initialize(phrase)
     @phrase = phrase.upcase
-    words = phrase.split(" ")
+    words = @phrase.split(" ")
     @chosen_letters = []
 		@lines = []
     @letters = []

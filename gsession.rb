@@ -146,7 +146,7 @@ order[0].note_other_players(order[1], order[2])
 order[1].note_other_players(order[2], order[0])
 order[2].note_other_players(order[0], order[1])
 game_won = false
-game_answer = "london bridge is falling down"
+game_answer = "london bridge is falling down".upcase
 board = Board.new(game_answer)
 
 until game_won do
