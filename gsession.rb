@@ -109,6 +109,7 @@ def puzzle_to_spaces(puzzle)
   spaces.length.times do |n|
     spaces[n] = "_" if spaces[n] != " "
   end
+  spaces
 end
 
 #
