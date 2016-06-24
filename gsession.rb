@@ -65,6 +65,7 @@ class Player
       return false
     else
       found_locs = board.fill_letter(letter)
+      byebug
       payload = 'found'
       found_locs.each do |loc|
         payload += '|' + loc.to_s
