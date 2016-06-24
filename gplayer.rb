@@ -49,6 +49,24 @@ class GameComm
   
 end
 
+class Puzzle
+  
+  def initialize(letters)
+    @letters = letters
+  end
+  
+  def turn_letters(letter, locations)
+    locations.each do |loc|
+      @letters[loc] = letter
+    end
+  end
+  
+  def get_letters
+    @letters
+  end
+  
+end
+
 #
 # main
 #
@@ -101,6 +119,11 @@ until game_over
     gc.send_reply(name)
     gc.set_name(name)
     puts "Ready to play"
+  when 'board'
+    gc.send_reply('ok')
+    puzzle = Puzzle.new(payload)
+    puts "Board load:"
+    puts payload
   when 'update'
     gc.send_reply('ok')
     puts "Board update:"
@@ -123,17 +146,24 @@ until game_over
   when 'timeout'
     puts "Took too long for your turn"
     gc.send_reply('ok')
+  when 'none'
+    puts "No, there is no letter #{letter}"
+    gc.send_reply('ok')
   when 'found'
-    found_count = payload.to_i
+    found_locs = payload.split("|")
+    found_count = found_locs.length
     case found_count
     when 1 then 
       puts "Yes, we have one letter #{letter}"
     when 0 then 
-      puts "No, there is no letter #{letter}"
+      puts "Should not get here!"
     else 
       puts "Yes, we have #{found_count} #{letter}'s"
     end
+    puzzle.turn_letters(letter, found_locs)
     gc.send_reply('ok')
+    puts "Board update:"
+    puts puzzle.get_letters
   when 'guess'
     puts "Guess:"
     guess = $stdin.gets.chomp.upcase

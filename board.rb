@@ -67,15 +67,15 @@ class Board
   end
   
   def fill_letter(letter)
-    found_count = 0
+    found_locs = []
     @@LETTER_COUNT.times do |letterno|
       if @letters[letterno] == letter
         @visible[letterno] = true
-        found_count += 1
+        found_locs << letterno
       end
     end
     @chosen_letters << letter
-    found_count
+    found_locs
   end
 	
 	private

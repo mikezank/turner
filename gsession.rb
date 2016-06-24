@@ -64,15 +64,20 @@ class Player
       update_others('timedout')
       return false
     else
-      found_count = board.fill_letter(letter)
-      send_command('found|' + found_count.to_s)
+      found_locs = board.fill_letter(letter)
+      payload = 'found'
+      found_locs.each do |loc|
+        payload += '|' + loc.to_s
+      end
+      # send_command(payload)
       update_others('picked|' + letter)
     end
-    if found_count == 0
+    if found_locs.length == 0
+      send_command('none')
       return false
     end
-    send_command('update|' + board.get_letters)
-    update_others('update|' + board.get_letters)
+    send_command(payload)
+    update_others(payload)
     guess = send_command('guess')
     if guess == board.phrase
       send_command('won')
@@ -99,7 +104,12 @@ def get_random_order(*players)
   [players[order[0]], players[order[1]], players[order[2]]]
 end
 
-
+def puzzle_to_spaces(puzzle)
+  spaces = String.new(puzzle)
+  spaces.length.times do |n|
+    spaces[n] = "_" if spaces[n] != " "
+  end
+end
 
 #
 # main
@@ -148,6 +158,10 @@ order[2].note_other_players(order[0], order[1])
 game_won = false
 game_answer = "london bridge is falling down".upcase
 board = Board.new(game_answer)
+spaces = puzzle_to_spaces(game_answer)
+reply = player1.send_command("board|#{spaces}")
+reply = player2.send_command("board|#{spaces}")
+reply = player3.send_command("board|#{spaces}")
 
 until game_won do
   0.upto(2).each do |player|
