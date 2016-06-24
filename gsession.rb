@@ -65,11 +65,11 @@ class Player
       return false
     else
       found_locs = board.fill_letter(letter)
-      byebug
-      payload = 'found'
+      payload = 'found|'
       found_locs.each do |loc|
-        payload += '|' + loc.to_s
+        payload += loc.to_s + '-'
       end
+      command = payload[0..payload.length-2] # remove extra "-"
       # send_command(payload)
       update_others('picked|' + letter)
     end
@@ -77,8 +77,8 @@ class Player
       send_command('none')
       return false
     end
-    send_command(payload)
-    update_others(payload)
+    send_command(command)
+    update_others(command)
     guess = send_command('guess')
     if guess == board.phrase
       send_command('won')

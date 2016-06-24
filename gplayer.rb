@@ -150,7 +150,7 @@ until game_over
     puts "No, there is no letter #{letter}"
     gc.send_reply('ok')
   when 'found'
-    found_locs = payload.split("|")
+    found_locs = payload.split("-")
     found_count = found_locs.length
     case found_count
     when 1 then 
