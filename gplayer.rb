@@ -29,6 +29,7 @@ class GameComm
   end
   
   def get_command
+    # waits for a command from GameSession and returns it with payload (if any)
     puts "waiting for a command on port #{@port}"
     error_check(@socket.recv_string(message=''))
     @logger.log("Player #{@name} received message '#{message}'")
@@ -50,7 +51,10 @@ class GameComm
 end
 
 class Puzzle
-  
+  #
+  # local copy of puzzle board so that updates can be displayed
+  # (not required for Android version)
+  #
   def initialize(letters)
     @letters = letters
   end
@@ -70,39 +74,30 @@ end
 #
 # main
 #
+# program run command:
+#
+#   ruby gplayer name (local)
+#
+#   where name is the player's name and local is an optional parameter that
+#   specifies to run the GameServer locally
+#
 name = ARGV.length < 1 ? 'unknown' : ARGV[0]
 runlocal = ARGV.length == 2 && ARGV[1] == 'local'
 logger = ZUtils::Logger.new('GPlayer', true)
-
 context = ZMQ::Context.new
-# Trap ^C 
-#Signal.trap("INT") { 
-#  puts "\nReleasing ports..."
-#  context.terminate
-#  exit
-#}
-
-# Trap `Kill `
-#Signal.trap("TERM") {
-#  puts "\nReleasing ports..."
-#  context.terminate
-#  exit
-#}
-
-#Signal.trap("EXIT") {
-#  puts "\nReleasing ports..."
-#  context.terminate
-#  exit
-#}
 
 server = runlocal ? 'localhost' : GConst::SERVER_IP
 socket = context.socket(ZMQ::REQ)
 socket.connect("tcp://#{server}:#{GConst::BROKER_PLAYER_PORT}")
 
+# try to join a game; wait for the port number to use with GameSession
 socket.send_string("join")
 socket.recv_string(message = '')
-logger.log("Received reply from GameSession: '#{message}'")
+logger.log("Received reply from GameServer: '#{message}'")
 port = message.to_i
+
+# instantiate a GameComm to communicate with the GameSession on the given port
+# and tell GameServer that we're connected
 gc = GameComm.new(context, server, port, logger)
 socket.send_string('connected')
 socket.recv_string(message='')
@@ -111,6 +106,7 @@ if message != 'ok'
   raise SystemExit
 end
 
+# This is the main game loop until game_over
 game_over = false
 letter = '' # to make its scope outside the case statement
 until game_over
