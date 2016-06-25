@@ -56,6 +56,7 @@ class Puzzle
   end
   
   def turn_letters(letter, locations)
+    byebug
     locations.each do |loc|
       @letters[loc.to_i] = letter
     end

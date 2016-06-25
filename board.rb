@@ -1,3 +1,5 @@
+require 'byebug
+'
 class Board
 
 	@@LINE_LENGTH = 20
@@ -22,6 +24,7 @@ class Board
 				raise "Phrase too big for Board"
 			end
 		end
+    byebug
     init_letters
 	end
   
