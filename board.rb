@@ -22,7 +22,6 @@ class Board
 				raise "Phrase too big for Board"
 			end
 		end
-    byebug
     init_letters
 	end
   
@@ -127,6 +126,7 @@ class Board
         @visible[letterno] = ["'", ":", " "].include? letter
       end
     end
+    byebug
   end
 
 end
