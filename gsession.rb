@@ -53,32 +53,37 @@ class Player
   def make_move(board)
     letter = send_command('pick')
     if board.already_chosen? letter
+      # letter was already chosen once before
       send_command('chosen')
       update_others('picked2|' + letter)
       return false
     end
     
-    case letter
-    when '*'
+    if letter == '*'
+      # player took too long to pick a letter and lost their turn
       send_command('timeout')
       update_others('timedout')
       return false
-    else
-      found_locs = board.fill_letter(letter)
-      payload = 'found|'
-      found_locs.each do |loc|
-        payload += loc.to_s + '-'
-      end
-      command = payload[0..payload.length-2] # remove extra "-"
-      # send_command(payload)
-      update_others('picked|' + letter)
     end
-    if found_locs.length == 0
+    
+    found_locs = board.fill_letter(letter)
+    found_count = found_locs.length
+    if found_count == 0
+      # no such letter in the puzzle
       send_command('none')
       return false
     end
-    send_command(command)
-    update_others(command)
+    
+    # there are one or more of the letter in the puzzle
+    payload = ''
+    found_locs.each do |loc|
+      payload += loc.to_s + '-' # will be used to split the locations by GPlayer
+    end
+    payload = payload[0..payload.length-2] # remove extra "-"
+    send_command('update|' + payload)
+    update_others('update|' + payload)
+    send_command('found|' + found_count.to_s)
+      
     guess = send_command('guess')
     if guess == board.phrase
       send_command('won')
@@ -88,7 +93,6 @@ class Player
       return false
     end
   end
-  
 end
 
 def abort_on_bad_reply(reply)

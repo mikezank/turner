@@ -57,7 +57,7 @@ class Puzzle
   
   def turn_letters(letter, locations)
     locations.each do |loc|
-      @letters[loc] = letter
+      @letters[loc.to_i] = letter
     end
   end
   
@@ -116,18 +116,22 @@ until game_over
   command, payload = gc.get_command
   case command
   when 'ready'
-    gc.send_reply(name)
     gc.set_name(name)
+    gc.send_reply(name)
     puts "Ready to play"
   when 'board'
-    gc.send_reply('ok')
+    # initial display of the board with blanks and spaces
     puzzle = Puzzle.new(payload)
     puts "Board load:"
     puts payload
-  when 'update'
     gc.send_reply('ok')
+  when 'update'
+    # update board with new letter and display it
+    found_locs = payload.split("-")
+    puzzle.turn_letters(letter, found_locs)
     puts "Board update:"
-    puts payload
+    puts puzzle.get_letters
+    gc.send_reply('ok')
   when 'done'
     gc.send_reply('done')
     puts "Game over.  You lost."
@@ -150,8 +154,7 @@ until game_over
     puts "No, there is no letter #{letter}"
     gc.send_reply('ok')
   when 'found'
-    found_locs = payload.split("-")
-    found_count = found_locs.length
+    found_count = payload.to_i
     case found_count
     when 1 then 
       puts "Yes, we have one letter #{letter}"
@@ -160,10 +163,7 @@ until game_over
     else 
       puts "Yes, we have #{found_count} #{letter}'s"
     end
-    puzzle.turn_letters(letter, found_locs)
     gc.send_reply('ok')
-    puts "Board update:"
-    puts puzzle.get_letters
   when 'guess'
     puts "Guess:"
     guess = $stdin.gets.chomp.upcase
