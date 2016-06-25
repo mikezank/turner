@@ -63,6 +63,7 @@ class Board
       end
       # letter_string << "\n"
     end
+    byebug
     letter_string
   end
   
@@ -126,7 +127,6 @@ class Board
         @visible[letterno] = ["'", ":", " "].include? letter
       end
     end
-    byebug
   end
 
 end
