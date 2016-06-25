@@ -63,7 +63,6 @@ class Board
       end
       # letter_string << "\n"
     end
-    byebug
     letter_string
   end
   

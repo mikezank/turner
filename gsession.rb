@@ -165,10 +165,11 @@ order[2].note_other_players(order[0], order[1])
 game_won = false
 game_answer = "london bridge is falling down".upcase
 board = Board.new(game_answer)
-spaces = puzzle_to_spaces(game_answer)
-reply = player1.send_command("board|#{spaces}")
-reply = player2.send_command("board|#{spaces}")
-reply = player3.send_command("board|#{spaces}")
+payload = board.get_letters
+#spaces = puzzle_to_spaces()
+reply = player1.send_command("board|#{payload}")
+reply = player2.send_command("board|#{payload}")
+reply = player3.send_command("board|#{payload}")
 
 until game_won do
   0.upto(2).each do |player|
