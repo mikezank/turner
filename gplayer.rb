@@ -112,6 +112,7 @@ if message != 'ok'
 end
 
 game_over = false
+letter = '' # to make its scope outside the case statement
 until game_over
   command, payload = gc.get_command
   case command
