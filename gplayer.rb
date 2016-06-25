@@ -174,6 +174,7 @@ until game_over
     gc.send_reply('ok')
   when 'picked'
     puts "Letter #{payload} was picked"
+    letter = payload
     gc.send_reply('ok')
   when 'timedout'
     puts "Player timed out"

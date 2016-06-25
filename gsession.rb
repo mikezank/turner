@@ -66,6 +66,7 @@ class Player
       return false
     end
     
+    update_others('picked|' + letter)
     found_locs = board.fill_letter(letter)
     found_count = found_locs.length
     if found_count == 0
