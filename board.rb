@@ -1,5 +1,3 @@
-require 'byebug
-'
 class Board
 
 	@@LINE_LENGTH = 20
