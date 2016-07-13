@@ -1,13 +1,13 @@
-#!/usr/bin/env ruby
-
-# Player
-
+#!/usr/bin/ruby
+#
+# TurnerPlayer is the client program for the TurnerGame
+#
 require 'rubygems'
 require 'ffi-rzmq'
+require 'logger'
 require 'byebug'
 
 require_relative 'constants.rb'
-require_relative 'zlogger.rb'
 
 class GameComm
   
@@ -76,14 +76,22 @@ end
 #
 # program run command:
 #
-#   ruby gplayer name (local)
+#   ruby gplayer name [-local]
 #
 #   where name is the player's name and local is an optional parameter that
 #   specifies to run the GameServer locally
 #
+$LOG = Logger.new(STDOUT)
+# $LOG = Logger.new('gameserver.log') # use this for production version
+$LOG.progname = "TurnerPlayer"
+
 name = ARGV.length < 1 ? 'unknown' : ARGV[0]
-runlocal = ARGV.length == 2 && ARGV[1] == 'local'
-logger = ZUtils::Logger.new('GPlayer', true)
+runlocal = ARGV.length == 2 && ARGV[1] == '-local'
+if runlocal
+  $LOG.debug "Connecting to local GameServer"
+else
+  $LOG.debug "Connecting to remote GameServer"
+end
 context = ZMQ::Context.new
 
 server = runlocal ? 'localhost' : GConst::SERVER_IP
@@ -91,9 +99,9 @@ socket = context.socket(ZMQ::REQ)
 socket.connect("tcp://#{server}:#{GConst::BROKER_PLAYER_PORT}")
 
 # try to join a game; wait for the port number to use with GameSession
-socket.send_string("join-turner-")
+socket.send_string("join")
 socket.recv_string(message = '')
-logger.log("Received reply from GameServer: '#{message}'")
+$LOG.debug "Received reply from GameServer: '#{message}'"
 port = message.to_i
 
 # instantiate a GameComm to communicate with the GameSession on the given port
@@ -102,8 +110,8 @@ gc = GameComm.new(context, server, port, logger)
 socket.send_string('connected')
 socket.recv_string(message='')
 if message != 'ok'
-  puts "Illegal message received from GameServer: '#{message}'"
-  raise SystemExit
+  $LOG.error "Illegal message received from GameServer: '#{message}'"
+  exit
 end
 
 # This is the main game loop until game_over
