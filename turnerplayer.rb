@@ -11,11 +11,10 @@ require_relative 'constants.rb'
 
 class GameComm
   
-  def initialize(context, server, port, logger)
+  def initialize(context, server, port)
     @port = port
     @socket = context.socket(ZMQ::REP)
     error_check(@socket.connect("tcp://#{server}:#{port}"))
-    @logger = logger
   end
   
   def error_check(rc)
@@ -30,9 +29,9 @@ class GameComm
   
   def get_command
     # waits for a command from GameSession and returns it with payload (if any)
-    puts "waiting for a command on port #{@port}"
+    $LOG.debug "waiting for a command on port #{@port}"
     error_check(@socket.recv_string(message=''))
-    @logger.log("Player #{@name} received message '#{message}'")
+    $LOG.debug "Player #{@name} received message '#{message}'"
     parts = message.split("|")
     command = parts[0]
     payload = parts.length > 1 ? parts[1] : nil
@@ -41,11 +40,16 @@ class GameComm
   
   def send_reply(reply)
     error_check(@socket.send_string(reply))
-    @logger.log("Player #{@name} sent reply '#{reply}'")
+    $LOG.debug "Player #{@name} sent reply '#{reply}'"
   end
   
   def set_name(name)
     @name = name
+  end
+  
+  def close_socket
+    puts "Closing socket"
+    @socket.close if @socket
   end
   
 end
@@ -99,20 +103,20 @@ socket = context.socket(ZMQ::REQ)
 socket.connect("tcp://#{server}:#{GConst::BROKER_PLAYER_PORT}")
 
 # try to join a game; wait for the port number to use with GameSession
-socket.send_string("join")
+socket.send_string("join-turner-")
 socket.recv_string(message = '')
 $LOG.debug "Received reply from GameServer: '#{message}'"
 port = message.to_i
 
 # instantiate a GameComm to communicate with the GameSession on the given port
 # and tell GameServer that we're connected
-gc = GameComm.new(context, server, port, logger)
-socket.send_string('connected')
-socket.recv_string(message='')
-if message != 'ok'
-  $LOG.error "Illegal message received from GameServer: '#{message}'"
-  exit
-end
+gc = GameComm.new(context, server, port)
+#socket.send_string('connected')
+#socket.recv_string(message='')
+#if message != 'ok'
+#  $LOG.error "Illegal message received from GameServer: '#{message}'"
+ # exit
+ #end
 
 # This is the main game loop until game_over
 game_over = false
@@ -192,6 +196,8 @@ until game_over
     raise SystemExit
   end
 end
-
-context.terminate
+byebug
+gc.close_socket
+socket.close if socket
+context.terminate if context
 

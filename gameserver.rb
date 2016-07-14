@@ -86,12 +86,6 @@ class GameServer
     @port_manager = PortManager.new
   end
   
-  def get_ports(numports)
-    ports = []
-    numports.times { ports << rand(100)}
-    ports
-  end
-  
   def find_slot(game_name, session_code)
     @player_slots.each do |slot|
       if slot.game_name == game_name && slot.session_code == session_code
@@ -105,8 +99,9 @@ class GameServer
   def create_session(game_name, session_code)
     ports = @port_manager.request_ports(@game_choices[game_name].numports)
     launch_session(game_name, ports)
+    ports_copy = Array.new(ports)
     @game_choices[game_name].numplayers.times do |n|
-      @player_slots << PlayerSlot.new(game_name, session_code, ports.pop)
+      @player_slots << PlayerSlot.new(game_name, session_code, ports_copy.pop)
     end
   end
   
@@ -123,7 +118,7 @@ class GameServer
     $LOG.debug "Launched #{game_name} session with ports #{ports}, pid = #{pid}"
     Thread.new {
       Process.wait(pid)
-      $LOG.debug "Process finished, pid = #{pid}"
+      $LOG.debug "#{game_name} session finished, pid = #{pid}, ports = #{ports}"
       @port_manager.reclaim_ports(ports)
     }
   end
@@ -143,7 +138,7 @@ def error_check(rc)
   end
 end
 
-def send_reply(reply)
+def send_reply(socket, reply)
   error_check(socket.send_string(reply))
   $LOG.debug "Sent reply: #{reply}"
 end
@@ -182,10 +177,10 @@ gs = GameServer.new
 loop do
   error_check(socket.recv_string(message = ''))
   $LOG.debug "Request received; message = #{message}"
-  parts = message.split('-')
+  command, game_name, session_code = message.split('-')
   
-  unless (parts[0] == "join") && (gs.game_exists? parts[1])
-    send_reply("error")
+  unless (command == "join") && (gs.game_exists? game_name)
+    send_reply(socket, "error")
     next
   end
   
@@ -195,10 +190,10 @@ loop do
       gs.create_session(game_name, session_code)
       port = gs.find_slot(game_name, session_code)
     rescue NoPortsError
-      send_reply("error")
+      send_reply(socket, "error")
       next
     end
   end
   
-  send_reply(port.to_s)
+  send_reply(socket, port.to_s)
 end

@@ -15,6 +15,7 @@ class Player
     @port = port
     @socket = context.socket(ZMQ::REQ)
     error_check(@socket.connect("tcp://localhost:#{port}"))
+    $LOG.debug "Connected to port #{port}"
   end
   
   def set_name(name)
@@ -27,10 +28,15 @@ class Player
   
   def send_command(command)
     error_check(@socket.send_string(command))
-    @LOG.debug "Sent '#{command}' to player #{@name} over port #{@port}")
+    $LOG.debug "Sent '#{command}' to player #{@name} over port #{@port}"
     error_check(@socket.recv_string(reply=''))
-    @LOG.debug "Received '#{reply}' from player #{@name}")
+    $LOG.debug "Received '#{reply}' from player #{@name}"
     reply
+  end
+  
+  def close_socket
+    puts "Closing socket"
+    @socket.close if @socket
   end
   
   def make_move(board)
@@ -128,7 +134,7 @@ def error_check(rc)
   end
 end
 
-at_exit { context.terminate } # do something here
+
 
 $LOG = Logger.new(STDOUT)
 # $LOG = Logger.new('gameserver.log') # use this for production version
@@ -141,12 +147,12 @@ end
 
 # establish GBrokers for each player and connect to them
 context = ZMQ::Context.new(1)
+#at_exit { context.terminate } # do something here
 players = []
-3.times do |n|
-  Process.spawn("ruby gbroker.rb #{ARGV[n]} #{ARGV[n+3]}")
-  error_check(socket.connect("tcp://localhost:#{ARGV[n]}"))
-  players << Player.new(context, ARGV[n+3].to_i)
-end
+3.times {|n| Process.spawn("ruby gbroker.rb #{ARGV[n]} #{ARGV[n+3]}")}
+#sleep 5
+  #error_check(socket.connect("tcp://localhost:#{ARGV[n]}"))
+3.times {|n| players << Player.new(context, ARGV[n].to_i)}
 
 # wait for all players to be ready
 3.times do |n|
@@ -165,9 +171,7 @@ game_answer = "london bridge is falling down".upcase
 board = Board.new(game_answer)
 payload = board.get_letters
 #spaces = puzzle_to_spaces()
-reply = player1.send_command("board|#{payload}")
-reply = player2.send_command("board|#{payload}")
-reply = player3.send_command("board|#{payload}")
+3.times {|n| reply = players[n].send_command("board|#{payload}")}
 
 until game_won do
   0.upto(2).each do |player|
@@ -175,6 +179,9 @@ until game_won do
     break if game_won
   end
 end
-
-context.terminate
+exit
+puts "Trying to terminate"
+byebug
+3.times {|n| players[n].close_socket}
+context.terminate if context
 
