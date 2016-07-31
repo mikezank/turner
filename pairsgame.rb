@@ -164,7 +164,7 @@ players = []
 # for now just talk to the one player
 player = Player.new(context, ARGV[0].to_i)
 loop do
-  player.get_command(command)
+  player.get_command(command='')
   player.send_reply('OK')
 end
 
